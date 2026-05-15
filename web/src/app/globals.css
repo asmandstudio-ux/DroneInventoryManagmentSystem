@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimal defaults for dashboard readability */
+html,
+body {
+  height: 100%;
+}
+

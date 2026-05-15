@@ -1,0 +1,150 @@
+name: ${COMPOSE_PROJECT_NAME:-droneims}
+
+# Release-oriented compose file:
+# - Uses prebuilt images (no local source build required)
+# - Runs one-shot DB migration on startup
+# - Brings up: backend + dashboard + postgres + minio (+ minio bucket init)
+#
+# Typical usage (from repo root):
+#   docker compose -f release/docker-compose.release.yml --env-file release/.env up -d
+#
+# Optional worker (if you set REPORT_JOBS_INLINE=false and SCAN_JOBS_INLINE=false):
+#   docker compose -f release/docker-compose.release.yml --env-file release/.env --profile worker up -d
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-droneims}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    ports:
+      # Bind to localhost only to avoid accidental LAN exposure.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-droneims}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/minio/health/ready >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} &&
+      mc mb -p local/${S3_BUCKET:-droneims} || true &&
+      mc anonymous set download local/${S3_BUCKET:-droneims} || true
+      "
+    restart: "no"
+
+  migrate:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &backend_env
+      ENV: ${ENV:-prod}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${WEB_PORT:-3000},http://127.0.0.1:${WEB_PORT:-3000}}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-droneims}}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-http://minio:9000}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:-droneims}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-${MINIO_ROOT_USER}}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-${MINIO_ROOT_PASSWORD}}
+      S3_PRESIGN_EXPIRES_SECONDS: ${S3_PRESIGN_EXPIRES_SECONDS:-900}
+      # Default to inline jobs for a simple release bundle (no extra worker component).
+      REPORT_JOBS_INLINE: ${REPORT_JOBS_INLINE:-true}
+      SCAN_JOBS_INLINE: ${SCAN_JOBS_INLINE:-true}
+      SCAN_JOBS_AUTO_ENQUEUE: ${SCAN_JOBS_AUTO_ENQUEUE:-true}
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  backend:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *backend_env
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    init: true
+    command:
+      - /bin/sh
+      - -c
+      - >
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-2}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/ready || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  # Optional background worker. Enable with:
+  #   REPORT_JOBS_INLINE=false
+  #   SCAN_JOBS_INLINE=false
+  # Then:
+  #   docker compose ... --profile worker up -d
+  ai-worker:
+    image: ${WORKER_IMAGE:-${BACKEND_IMAGE}}
+    profiles: ["worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *backend_env
+    init: true
+    command: ["python", "-m", "app.worker"]
+    restart: unless-stopped
+
+  dashboard:
+    image: ${DASHBOARD_IMAGE:?Set DASHBOARD_IMAGE}
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      # Must be the externally reachable URL (client-side) when deployed behind a reverse proxy.
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://127.0.0.1:${API_PORT:-8000}/api/v1}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    init: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  miniodata:
