@@ -51,7 +51,7 @@ Ensure the following are installed on your system **before** starting:
 git clone https://github.com/asmandstudio-ux/DroneInventoryManagmentSystem.git
 cd DroneInventoryManagmentSystem
 
-### 2. Create Virtual Environment
+**### 2. Create Virtual Environment**
 ```bash
 # Windows
 python -m venv venv
@@ -61,19 +61,22 @@ venv\Scripts\activate
 python3 -m venv venv
 source venv/bin/activate
 
-### 2. Install Dependencies
-Install Python requirements (includes AI libraries):
+**### 2. Install Dependencies**
+_Install Python requirements (includes AI libraries)_:
 ```bash
+pip install -r requirements.txt
+
+_Install Node.js dependencies:_
 cd web
 npm install
 cd ..
 
-4. Configure Environment
+**4. Configure Environment**
 The launcher auto-generates .env files on first run. However, you can manually customize app/.env and web/.env.local if needed.
 
 ---
 
-## 🚀 Running the System (One-Click Start)
+**## 🚀 Running the System (One-Click Start)**
 This is the only command you need to run to start the entire ecosystem (DB, Storage, Backend, Frontend).
 
 On Windows
@@ -88,7 +91,7 @@ python scripts/launch_native.py --start
 
 ---
 
-## What Happens Next?
+**## What Happens Next?**
 **PostgreSQL Check**: Verifies DB is running; creates droneims database if missing.
 **MinIO Check**: Ensures object storage is ready.
 **Super Admin Creation**: Automatically creates the default admin user.
@@ -98,7 +101,7 @@ python scripts/launch_native.py --start
 
 ---
 
-## 🔑 Default Credentials
+**## 🔑 Default Credentials**
 Upon first launch, the system creates a Super Admin account:
 Field               Value
 Username            finsun2020
@@ -106,7 +109,7 @@ Password            AestheticS68742!
 
 ---
 
-## 🧠 Using the AI Vision Module
+**## 🧠 Using the AI Vision Module**
 To enable custom label detection and barcode reading:
 1. Upload Custom YOLO Weights (Optional)
 If you have a custom-trained model (best.pt):
@@ -128,7 +131,7 @@ Extract text (OCR) from the label area.
 
 ---
 
-## 🧪 Testing & QA
+**## 🧪 Testing & QA**
 Run the automated test suite to verify your installation:
 ```bash
 # Backend Tests
@@ -140,7 +143,7 @@ npx playwright test
 
 ---
 
-## 📂 Project Structure
+**## 📂 Project Structure**
 TEXT:
 DroneInventoryManagmentSystem/
 ├── app/                    # FastAPI Backend
@@ -160,7 +163,7 @@ DroneInventoryManagmentSystem/
 
 ---
 
-## 🛠️ Troubleshooting
+**## 🛠️ Troubleshooting**
 
 PostgreSQL Connection Error
 Ensure PostgreSQL service is running (services.msc on Windows).
@@ -176,7 +179,7 @@ Linux/Mac: lsof -ti:8000 | xargs kill -9
 
 ---
 
-## 📄 License
+**## 📄 License**
 Proprietary Software - Asmand Studio UX © 2024
 
 ---
