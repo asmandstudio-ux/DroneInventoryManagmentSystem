@@ -71,6 +71,8 @@ cd ..
 4. Configure Environment
 The launcher auto-generates .env files on first run. However, you can manually customize app/.env and web/.env.local if needed.
 
+---
+
 ## 🚀 Running the System (One-Click Start)
 This is the only command you need to run to start the entire ecosystem (DB, Storage, Backend, Frontend).
 
@@ -84,6 +86,7 @@ On macOS/Linux
 ```bash
 python scripts/launch_native.py --start
 
+---
 
 ## What Happens Next?
 **PostgreSQL Check**: Verifies DB is running; creates droneims database if missing.
@@ -93,11 +96,15 @@ python scripts/launch_native.py --start
 **Frontend Start**: Launches Next.js on http://localhost:3000.
 **Auto-Login**: Your browser opens automatically to the dashboard.
 
+---
+
 ## 🔑 Default Credentials
 Upon first launch, the system creates a Super Admin account:
 Field               Value
 Username            finsun2020
 Password            AestheticS68742!
+
+---
 
 ## 🧠 Using the AI Vision Module
 To enable custom label detection and barcode reading:
@@ -119,6 +126,7 @@ Locate labels based on your template.
 Decode QR/Barcodes inside those labels.
 Extract text (OCR) from the label area.
 
+---
 
 ## 🧪 Testing & QA
 Run the automated test suite to verify your installation:
@@ -129,6 +137,8 @@ pytest tests/ -v
 # Frontend Tests (requires Playwright)
 cd web
 npx playwright test
+
+---
 
 ## 📂 Project Structure
 TEXT:
@@ -148,6 +158,8 @@ DroneInventoryManagmentSystem/
 ├── requirements.txt        # Python Dependencies
 └── DroneIMS_Native.cmd     # Windows One-Click Icon
 
+---
+
 ## 🛠️ Troubleshooting
 
 PostgreSQL Connection Error
@@ -162,8 +174,13 @@ If 8000 or 3000 is busy, kill the process:
 Windows: netstat -ano | findstr :8000 then taskkill /PID <ID> /F
 Linux/Mac: lsof -ti:8000 | xargs kill -9
 
+---
+
 ## 📄 License
 Proprietary Software - Asmand Studio UX © 2024
+
+---
+
 ## 🤝 Support
 For enterprise support or custom AI model training, contact support@asmandstudio.com.
 ```
