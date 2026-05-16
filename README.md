@@ -1,91 +1,168 @@
-# Drone Inventory Management System
+# 🚁 Drone Inventory Management System (Standalone Enterprise Edition)
 
-A warehouse drone scanning platform with:
-- FastAPI backend (JWT auth + RBAC, missions, scan results, reports)
-- Postgres data store
-- S3-compatible object storage (MinIO for local dev) for evidence and report artifacts
-- Background worker for scan/report jobs
-- Next.js dashboard for operations
+A high-performance, standalone inventory management system utilizing autonomous drones, computer vision (YOLOv8), and advanced analytics. This edition runs natively on Windows/Linux/macOS **without Docker**, featuring a one-click launcher that orchestrates PostgreSQL, MinIO, Backend, and Frontend services automatically.
 
-## Local development (Docker)
+## ✨ Key Features
 
-1. Create an environment file:
-   - Copy `.env.example` to `.env` and edit values if needed.
+### 🛡️ Security & Access
+- **JWT Authentication**: Secure stateless sessions.
+- **Role-Based Access Control (RBAC)**: Admin, Warehouse Manager, Operator, Viewer.
+- **Super Admin Default**: Pre-configured secure access.
 
-2. Start the stack:
-   - `docker compose up --build`
+### 🤖 AI-Powered Vision Engine
+- **Custom YOLOv8 Support**: Upload your own trained `.pt` weights for specific object detection.
+- **Label Template Matching**: Upload a reference label image; the system learns to detect similar labels in drone footage.
+- **Hybrid Decoding**: Automatically extracts:
+  - **QR Codes & Barcodes** (via `pyzbar`)
+  - **Text Content** (via `EasyOCR`) from detected label regions.
 
-3. Open:
-   - Dashboard: `http://localhost:3000`
-   - API docs: `http://localhost:8000/docs`
-   - API health: `http://localhost:8000/health`
-   - API readiness: `http://localhost:8000/ready`
-   - MinIO console: `http://localhost:9001`
+### 🏭 Core Operations
+- **Drone Fleet Management**: Battery health, status tracking, maintenance logs.
+- **Autonomous Missions**: Waypoint planning and execution.
+- **3D Warehouse Visualization**: Real-time drone tracking on interactive maps.
+- **Automated Reporting**: PDF/CSV generation with visual evidence.
 
-The dev compose runs the API and worker containers with source mounts and enables MinIO bucket init automatically.
+### 🚀 Standalone Architecture
+- **Zero-Config Launcher**: One script starts Database, Storage, API, and UI.
+- **Native Performance**: No container overhead; direct hardware access.
+- **Self-Healing**: Automatic service health checks and restarts.
 
-## Production-like (Docker Compose)
+---
 
-Use `docker-compose.prod.yml`:
-- Requires non-default secrets for Postgres, MinIO, and JWT.
-- Runs database migrations as a one-shot `migrate` service before starting API/worker.
-- Runs Next.js in production mode (built image).
+## 📋 Prerequisites
 
-Example:
-- `docker compose -f docker-compose.prod.yml up --build`
+Ensure the following are installed on your system **before** starting:
 
-## One-click start (Windows release bundle)
+1. **Python 3.10+** (Check: `python --version`)
+2. **Node.js 18+** (Check: `node --version`)
+3. **PostgreSQL 16+** (Check: `psql --version`)
+   - *Must be added to your system PATH.*
+   - *Default user `postgres` must be accessible.*
+4. **Git** (for cloning)
 
-If you’re using the packaged Windows release zip from `dist/`:
+> **Note for Windows Users**: Ensure you run PowerShell or Command Prompt as **Administrator** for the initial setup if PostgreSQL needs initialization.
 
-1. Unzip `droneims-release_<version>.zip`
-2. Double-click `DroneIMS.cmd`
-   - Starts Docker Compose services
-   - Opens the Dashboard login page: `http://localhost:3000/login`
-   - Creates Desktop + Start Menu shortcuts named `DroneIMS` (first run)
+---
 
-More details are in [release/README.md](file:///c:/Users/asman/Desktop/DroneInventoryManagmentSystem/release/README.md).
+## 🛠️ Installation & Setup
 
-## Core flows
+### 1. Clone the Repository
+```bash
+git clone https://github.com/asmandstudio-ux/DroneInventoryManagmentSystem.git
+cd DroneInventoryManagmentSystem
 
-- Auth:
-  - `POST /api/v1/auth/register`
-  - `POST /api/v1/auth/login`
-  - `GET /api/v1/auth/me`
-- Missions:
-  - `POST /api/v1/missions`
-  - `GET /api/v1/missions`
-  - `GET /api/v1/missions/{missionId}`
-- Evidence upload:
-  - `POST /api/v1/uploads/presign` returns a presigned PUT URL and server-minted object key for a scan result
-  - Client uploads evidence bytes to S3 via PUT
-  - `POST /api/v1/uploads/confirm` confirms the upload and (optionally) auto-enqueues scan processing
-- Scan results:
-  - `POST /api/v1/scan-results` stores scan metadata (mission link, drone id, data)
-  - `POST /api/v1/scan-results/{scanResultId}/process` enqueues scan processing explicitly (if not auto-enqueued)
-- Reports:
-  - `POST /api/v1/reports` enqueues a report job
-  - `GET /api/v1/reports/{jobId}/download` presigns a download URL when ready
+### 2. Create Virtual Environment
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
 
-## Testing
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
 
-The API tests expect a reachable Postgres database (CI uses a service container).
+### 2. Install Dependencies
+Install Python requirements (includes AI libraries):
+```bash
+cd web
+npm install
+cd ..
 
-1. Install:
-   - `pip install -r requirements.txt -r requirements-dev.txt`
+4. Configure Environment
+The launcher auto-generates .env files on first run. However, you can manually customize app/.env and web/.env.local if needed.
+🚀 Running the System (One-Click Start)
+This is the only command you need to run to start the entire ecosystem (DB, Storage, Backend, Frontend).
 
-2. Set env:
-   - `DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/droneims_test`
+On Windows
+Double-click the DroneIMS_Native.cmd icon in the root folder.
+OR run via terminal:
+```powershell
+python scripts\launch_native.py --start
 
-3. Run:
-   - `pytest -q`
+On macOS/Linux
+```bash
+python scripts/launch_native.py --start
 
-### Frontend checks (no local Node)
 
-If you don’t have Node/npm installed locally, run the dashboard checks inside the `dashboard` container (requires Docker Desktop / Docker daemon running):
-- `docker compose run --rm dashboard npm run lint`
-- `docker compose run --rm dashboard npm run build`
+**What Happens Next?**
+**PostgreSQL Check**: Verifies DB is running; creates droneims database if missing.
+**MinIO Check**: Ensures object storage is ready.
+**Super Admin Creation**: Automatically creates the default admin user.
+**Backend Start**: Launches FastAPI on http://localhost:8000.
+**Frontend Start**: Launches Next.js on http://localhost:3000.
+**Auto-Login**: Your browser opens automatically to the dashboard.
 
-## Notes
+🔑 Default Credentials
+Upon first launch, the system creates a Super Admin account:
+Field               Value
+Username            finsun2020
+Password            AestheticS68742!
 
-- The worker currently drains queued jobs directly from Postgres; Redis is provisioned for future queue adoption but is not required by the current worker implementation.
+🧠 Using the AI Vision Module
+To enable custom label detection and barcode reading:
+1. Upload Custom YOLO Weights (Optional)
+If you have a custom-trained model (best.pt):
+Go to Settings > AI Models.
+Upload your .pt file.
+If skipped, the system uses the default generic object detection model.
+2. Upload Label Template (Required for Specific Labels)
+To teach the system what your inventory labels look like:
+Go to Settings > Vision Templates.
+Upload a clear image of a single label as a reference.
+The system will use template matching to find similar labels in drone scans.
+3. Run a Scan
+Create a Mission and assign a drone.
+Once images are uploaded/simulated, go to Scan Results.
+The system will automatically:
+Locate labels based on your template.
+Decode QR/Barcodes inside those labels.
+Extract text (OCR) from the label area.
+
+
+🧪 Testing & QA
+Run the automated test suite to verify your installation:
+```bash
+# Backend Tests
+pytest tests/ -v
+
+# Frontend Tests (requires Playwright)
+cd web
+npx playwright test
+
+📂 Project Structure
+TEXT:
+DroneInventoryManagmentSystem/
+├── app/                    # FastAPI Backend
+│   ├── api/routes/         # API Endpoints (Auth, Drones, Vision)
+│   ├── services/           # Business Logic (Vision Engine, Storage)
+│   ├── db/                 # Database Models & Session
+│   └── main.py             # App Entry Point
+├── web/                    # Next.js Frontend
+│   ├── src/app/            # Pages & Components
+│   └── public/             # Static Assets
+├── scripts/                # Automation Scripts
+│   ├── launch_native.py    # 🚀 Main Launcher
+│   └── create_superuser.py # User Initialization
+├── data/                   # Persistent Data (DB files, MinIO blobs)
+├── requirements.txt        # Python Dependencies
+└── DroneIMS_Native.cmd     # Windows One-Click Icon
+
+🛠️ Troubleshooting
+
+PostgreSQL Connection Error
+Ensure PostgreSQL service is running (services.msc on Windows).
+Verify postgres user has no password or matches your .env.
+Check if port 5432 is not blocked by firewall.
+Module Not Found (OpenCV/YOLO)
+Re-run pip install -r requirements.txt --force-reinstall.
+On Windows, you may need to install Microsoft C++ Build Tools.
+Port Already in Use
+If 8000 or 3000 is busy, kill the process:
+Windows: netstat -ano | findstr :8000 then taskkill /PID <ID> /F
+Linux/Mac: lsof -ti:8000 | xargs kill -9
+
+📄 License
+Proprietary Software - Asmand Studio UX © 2024
+🤝 Support
+For enterprise support or custom AI model training, contact support@asmandstudio.com.
+```
