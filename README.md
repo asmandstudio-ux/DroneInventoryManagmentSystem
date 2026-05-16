@@ -70,7 +70,8 @@ cd ..
 
 4. Configure Environment
 The launcher auto-generates .env files on first run. However, you can manually customize app/.env and web/.env.local if needed.
-🚀 Running the System (One-Click Start)
+
+## 🚀 Running the System (One-Click Start)
 This is the only command you need to run to start the entire ecosystem (DB, Storage, Backend, Frontend).
 
 On Windows
@@ -84,7 +85,7 @@ On macOS/Linux
 python scripts/launch_native.py --start
 
 
-**What Happens Next?**
+## What Happens Next?
 **PostgreSQL Check**: Verifies DB is running; creates droneims database if missing.
 **MinIO Check**: Ensures object storage is ready.
 **Super Admin Creation**: Automatically creates the default admin user.
@@ -92,13 +93,13 @@ python scripts/launch_native.py --start
 **Frontend Start**: Launches Next.js on http://localhost:3000.
 **Auto-Login**: Your browser opens automatically to the dashboard.
 
-🔑 Default Credentials
+## 🔑 Default Credentials
 Upon first launch, the system creates a Super Admin account:
 Field               Value
 Username            finsun2020
 Password            AestheticS68742!
 
-🧠 Using the AI Vision Module
+## 🧠 Using the AI Vision Module
 To enable custom label detection and barcode reading:
 1. Upload Custom YOLO Weights (Optional)
 If you have a custom-trained model (best.pt):
@@ -119,7 +120,7 @@ Decode QR/Barcodes inside those labels.
 Extract text (OCR) from the label area.
 
 
-🧪 Testing & QA
+## 🧪 Testing & QA
 Run the automated test suite to verify your installation:
 ```bash
 # Backend Tests
@@ -129,7 +130,7 @@ pytest tests/ -v
 cd web
 npx playwright test
 
-📂 Project Structure
+## 📂 Project Structure
 TEXT:
 DroneInventoryManagmentSystem/
 ├── app/                    # FastAPI Backend
@@ -147,7 +148,7 @@ DroneInventoryManagmentSystem/
 ├── requirements.txt        # Python Dependencies
 └── DroneIMS_Native.cmd     # Windows One-Click Icon
 
-🛠️ Troubleshooting
+## 🛠️ Troubleshooting
 
 PostgreSQL Connection Error
 Ensure PostgreSQL service is running (services.msc on Windows).
@@ -161,8 +162,8 @@ If 8000 or 3000 is busy, kill the process:
 Windows: netstat -ano | findstr :8000 then taskkill /PID <ID> /F
 Linux/Mac: lsof -ti:8000 | xargs kill -9
 
-📄 License
+## 📄 License
 Proprietary Software - Asmand Studio UX © 2024
-🤝 Support
+## 🤝 Support
 For enterprise support or custom AI model training, contact support@asmandstudio.com.
 ```
