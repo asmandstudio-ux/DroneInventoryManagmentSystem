@@ -1,0 +1,13 @@
+# Optional heavy dependencies for app/services/vision_engine.py (YOLOv8 + EasyOCR).
+# They pull in PyTorch (several GB), so they are NOT part of the default image.
+# The vision routes are not registered in app/api/router.py yet.
+#
+# Install only where the vision engine is used:
+#   pip install -r requirements.txt -r requirements-vision.txt
+#
+# On the Intel NUC (no NVIDIA GPU), install the CPU-only PyTorch build first to
+# avoid downloading CUDA libraries:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+ultralytics>=8.0.0
+easyocr>=1.7.0

@@ -102,10 +102,15 @@ python scripts/launch_native.py --start
 ---
 
 **## 🔑 Default Credentials**
-Upon first launch, the system creates a Super Admin account:
-Field               Value
-Username            finsun2020
-Password            AestheticS68742!
+There are no default credentials. Create an admin account yourself (you will be prompted for a password, which is never stored in the repo):
+
+```bash
+python scripts/create_superuser.py --email you@example.com
+# or, with Docker:
+docker compose exec backend python scripts/create_superuser.py --email you@example.com
+```
+
+Log in to the dashboard with that email and password.
 
 ---
 

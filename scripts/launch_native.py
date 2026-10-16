@@ -20,15 +20,16 @@ FRONTEND_DIR = ROOT_DIR / "web"
 POSTGRES_DATA = ROOT_DIR / "data" / "postgres"
 MINIO_DATA = ROOT_DIR / "data" / "minio"
 
-# Env Variables
-os.environ["DATABASE_URL"] = "postgresql+asyncpg://postgres:postgres@localhost:5432/droneims"
-os.environ["MINIO_ENDPOINT"] = "localhost:9000"
-os.environ["MINIO_ACCESS_KEY"] = "minioadmin"
-os.environ["MINIO_SECRET_KEY"] = "minioadmin"
-os.environ["SECRET_KEY"] = "change_this_in_production_to_a_long_random_string"
-os.environ["VISION_MODEL_PATH"] = str(ROOT_DIR / "models" / "best.pt")
-os.environ["LABEL_TEMPLATE_PATH"] = str(ROOT_DIR / "models" / "label_template.png")
-os.environ["TEMP_DIR"] = str(ROOT_DIR / "temp")
+# Env Variables (names match app/core/config.py; values already set in the
+# environment or .env win over these local-dev defaults)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/droneims")
+os.environ.setdefault("S3_ENDPOINT_URL", "http://localhost:9000")
+os.environ.setdefault("S3_ACCESS_KEY_ID", "minioadmin")
+os.environ.setdefault("S3_SECRET_ACCESS_KEY", "minioadmin")
+os.environ.setdefault("ENV", "dev")
+os.environ.setdefault("VISION_MODEL_PATH", str(ROOT_DIR / "models" / "best.pt"))
+os.environ.setdefault("LABEL_TEMPLATE_PATH", str(ROOT_DIR / "models" / "label_template.png"))
+os.environ.setdefault("TEMP_DIR", str(ROOT_DIR / "temp"))
 
 processes = []
 
@@ -48,7 +49,7 @@ def stop_services():
         try:
             p.terminate()
             p.wait(timeout=3)
-        except:
+        except Exception:
             p.kill()
     print("All services stopped.")
 
@@ -138,23 +139,16 @@ def setup_minio():
 
 def setup_db_tables():
     print("🛠 Running Database Migrations...")
-    # Ensure alembic or create_all is run
-    # Simple approach: Import models and create_all
+    # Same schema path as Docker: apply Alembic migrations (alembic/versions).
     try:
-        sys.path.insert(0, str(BACKEND_DIR))
-        from app.db.session import async_session_maker, engine
-        from app.models import user, drone, mission # Import all models
-        import asyncio
-        
-        async def init():
-            async with engine.begin() as conn:
-                await conn.run_sync(user.Base.metadata.create_all)
-                # Repeat for other models or use a unified Base
-        # asyncio.run(init()) # Simplified for script
-        print("Database tables verified.")
+        subprocess.run(
+            [sys.executable, "-m", "alembic", "upgrade", "head"], cwd=BACKEND_DIR, check=True
+        )
+        print("Database schema is up to date.")
     except Exception as e:
-        print(f"⚠️ Could not auto-create tables: {e}")
-        print("Ensure you run 'alembic upgrade head' if using migrations.")
+        print(f"⚠️ Could not run migrations: {e}")
+        print("Run 'alembic upgrade head' manually before using the app.")
+
 
 def create_admin_user():
     print("👤 Ensuring Super Admin exists...")
@@ -234,7 +228,7 @@ def main():
         sys.exit(1)
 
     print("\n✅ System Ready!")
-    print("Login with: finsun2020 / AestheticS68742!")
+    print("Log in with the admin account created by scripts/create_superuser.py.")
     print("Press Ctrl+C to stop all services.\n")
     
     # Keep alive

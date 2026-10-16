@@ -1,0 +1,19 @@
+# Store text files with LF in the repo and check them out with LF everywhere
+# (Mac, Ubuntu NUC, and Windows), so editors never create line-ending-only diffs.
+* text=auto eol=lf
+
+# Windows launchers must keep CRLF to run correctly on Windows.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.tar binary
+*.glb binary
+*.ply binary
+*.pt binary
+*.onnx binary
