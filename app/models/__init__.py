@@ -1,5 +1,6 @@
 from app.models.barcode_read import BarcodeRead
 from app.models.mission import Mission
+from app.models.pallet_check import PalletCheck, PalletReview
 from app.models.report_job import ReportJob
 from app.models.risk_event import RiskEvent
 from app.models.scan_job import ScanJob
@@ -18,5 +19,7 @@ __all__ = [
     "RiskEvent",
     "BarcodeRead",
     "ScanJob",
+    "PalletCheck",
+    "PalletReview",
 ]
 
