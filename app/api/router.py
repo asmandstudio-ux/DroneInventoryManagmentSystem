@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.routes import auth, missions, reports, risk_events, scan_jobs, scan_results, uploads, warehouses, warehouse_maps
+from app.api.routes import auth, missions, pallet_checks, reports, risk_events, scan_jobs, scan_results, uploads, warehouses, warehouse_maps
 
 api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -14,4 +14,5 @@ api_router.include_router(warehouses.router, prefix="/warehouses", tags=["wareho
 api_router.include_router(warehouse_maps.router, prefix="/warehouses", tags=["warehouse-maps"])
 api_router.include_router(risk_events.router, prefix="/risk-events", tags=["risk-events"])
 api_router.include_router(scan_jobs.router, prefix="/scan-jobs", tags=["scan-jobs"])
+api_router.include_router(pallet_checks.router, prefix="/pallet-checks", tags=["pallet-safety"])
 

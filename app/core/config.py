@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     # Auto-enqueue scan jobs when evidence upload is confirmed.
     SCAN_JOBS_AUTO_ENQUEUE: bool = True
 
+    # Pallet-safety vision (optional). Path to the Hover Logix YOLO26n ONNX model used by
+    # app/services/pallet_safety_service.py. The feature reports unavailable (503) when this
+    # file — or the onnxruntime dependency — is missing. Relative paths resolve from the API's
+    # working directory; the model lives under the git-ignored models/ directory.
+    PALLET_MODEL_PATH: str = "models/hoverlogix_v1_960.onnx"
+
 
 settings = Settings()
 
