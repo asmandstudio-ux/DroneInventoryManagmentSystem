@@ -1,6 +1,4 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, BackgroundTasks
-from fastapi.responses import JSONResponse
-from typing import Optional
 import os
 import shutil
 from app.services.vision_engine import vision_engine

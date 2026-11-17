@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Protocol, Sequence, Tuple
+from typing import Dict, List, Protocol, Sequence, Tuple
 
 from .barcode_types import DecodedBarcode, FrameScanResult
 

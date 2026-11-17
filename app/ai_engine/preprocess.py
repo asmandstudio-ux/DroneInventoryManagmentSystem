@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Protocol, Tuple
+from typing import Dict, Protocol, Tuple
 
 import cv2
 import numpy as np

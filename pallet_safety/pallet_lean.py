@@ -20,7 +20,7 @@ Only numpy, opencv-python and onnxruntime are needed. Coordinates are pixels of 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 import cv2
@@ -254,9 +254,9 @@ def analyse_pallet(gr: Gradients, box):
     }
 
 
-def side_tilt(l) -> float:
+def side_tilt(edge) -> float:
     """Tilt of a load edge in degrees, + = top leans right."""
-    return _deg(math.atan2(l[0] - l[2], l[3] - l[1]))
+    return _deg(math.atan2(edge[0] - edge[2], edge[3] - edge[1]))
 
 
 def upright_tilts(gr: Gradients, uprights):
@@ -389,7 +389,7 @@ def measure_stack(chain, ref_deg, lim: Limits):
         o = level_out(env, p)
         levels.append({"n": p["n"], "id": p["id"], "lean": measure(p, ref_deg, lim)["lean"],
                        "placedOffCentreMm": o["placeShift"] * mmpx, "topOutsideMm": o["shift"] * mmpx})
-    worst = max(levels, key=lambda l: abs(l["topOutsideMm"]))
+    worst = max(levels, key=lambda lv: abs(lv["topOutsideMm"]))
     lean = _deg(math.atan2(levels[-1]["topOutsideMm"] / (mmpx or 1), height))
     return {"pallets": [p["id"] for p in chain], "levels": levels, "outsideMm": worst["topOutsideMm"], "lean": lean,
             "verdict": judge(lean, worst["topOutsideMm"], lim), "partial": any(p["partial"] and not p.get("call") for p in chain)}
@@ -446,9 +446,9 @@ def analyse_image(img_bgr: np.ndarray, detector: Optional[Detector] = None, limi
     for s in stacks:
         s["outsideMm"] = round(s["outsideMm"], 1)
         s["lean"] = round(s["lean"], 2)
-        for l in s["levels"]:
+        for lv in s["levels"]:
             for k in ("lean", "placedOffCentreMm", "topOutsideMm"):
-                l[k] = round(l[k], 2)
+                lv[k] = round(lv[k], 2)
     judged = [p["result"]["verdict"] for p in pallets if p["result"]["verdict"] != "not_judged"]
     judged += [s["verdict"] for s in stacks if not s["partial"]]
     overall = max(judged, key=lambda v: _RANK[v]) if judged else "no_pallets"
@@ -506,6 +506,6 @@ def draw_result(img_bgr: np.ndarray, result: dict) -> np.ndarray:
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 4, cv2.LINE_AA)
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, _COL[verdict], 2, cv2.LINE_AA)
     for p in result["pallets"]:
-        for l in (p["lines"]["left"], p["lines"]["right"]):
-            cv2.line(img, (int(l[0]), int(l[1])), (int(l[2]), int(l[3])), (255, 255, 255), 2, cv2.LINE_AA)
+        for line in (p["lines"]["left"], p["lines"]["right"]):
+            cv2.line(img, (int(line[0]), int(line[1])), (int(line[2]), int(line[3])), (255, 255, 255), 2, cv2.LINE_AA)
     return img
