@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Protocol, Sequence, Tuple
+from typing import Dict, List, Protocol, Sequence, Tuple
 
 import cv2
 import numpy as np
 
-from .barcode_types import BBoxXYXY, DecodedBarcode, Detection, crop_bbox
+from .barcode_types import DecodedBarcode, Detection, crop_bbox
 
 logger = logging.getLogger(__name__)
 

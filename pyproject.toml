@@ -4,7 +4,11 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F"]
-ignore = []
+# E501 (line-too-long) is ignored: the long lines are spread across real
+# source, so wrapping them would be a large, risky diff for no behaviour
+# change. All other E/F rules (real errors — unused names, undefined names,
+# etc.) stay enabled.
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

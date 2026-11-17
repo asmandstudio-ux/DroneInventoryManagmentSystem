@@ -15,8 +15,8 @@ root = Path(__file__).resolve().parents[1]
 if str(root) not in sys.path:
     sys.path.insert(0, str(root))
 
-from app.main import create_app
-from app.core.config import settings
+from app.main import create_app  # noqa: E402 — imported after sys.path setup above
+from app.core.config import settings  # noqa: E402 — imported after sys.path setup above
 
 
 def _sync_database_url(async_url: str) -> str:

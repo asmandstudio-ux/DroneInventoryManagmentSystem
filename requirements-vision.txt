@@ -1,13 +1,21 @@
-# Optional heavy dependencies for app/services/vision_engine.py (YOLOv8 + EasyOCR).
-# They pull in PyTorch (several GB), so they are NOT part of the default image.
-# The vision routes are not registered in app/api/router.py yet.
+# Optional vision dependencies — NOT part of the default image.
 #
-# Install only where the vision engine is used:
+# Install where a vision feature is actually used:
 #   pip install -r requirements.txt -r requirements-vision.txt
 #
 # On the Intel NUC (no NVIDIA GPU), install the CPU-only PyTorch build first to
 # avoid downloading CUDA libraries:
 #   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
+# --- Inventory label scan: app/services/vision_engine.py (YOLOv8 + EasyOCR). ---
+# Pulls in PyTorch (several GB). The inventory vision route (app/api/routes/vision.py)
+# is still a stub and is not registered in app/api/router.py.
 ultralytics>=8.0.0
 easyocr>=1.7.0
+
+# --- Pallet-safety lean/stack check: pallet_safety/ + app/services/pallet_safety_service.py. ---
+# numpy and opencv-python-headless are already core deps (requirements.txt), so this adds only
+# the ONNX runtime. The model binary lives under the git-ignored models/ directory
+# (models/hoverlogix_v1_960.onnx) and is deployed separately. The /api/v1/pallet-checks route
+# reports the model as unavailable (503) if onnxruntime or the model file is missing.
+onnxruntime>=1.17
